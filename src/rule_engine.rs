@@ -57,46 +57,47 @@ pub fn is_allowed_move(board: &Vec<Option<Piece>>, from: (char, i32), to: (char,
         }
         // Knight Check
         if (piece_from.piece_type == PieceType::Rook) {
-            // Same Col
+
+            if (from.0 != to.0 && from.1 != to.1) {
+                return Err(GameErr::IllegalMove("Illegal Rook move".into()));
+            }
+            let board_ = board.clone();
+
+            // Move on same column
             if from.0 == to.0 {
-                // Check no pieces in between start and end
-                let mut start_check_from = from.1 + 1;
-                let mut end_check_at = to.1;
-
-                if from.1 as i32 > to.1 as i32 {
-                    start_check_from = to.1 + 1;
-                    end_check_at = from.1 - 1;
-                }
-                for i in start_check_from..end_check_at {
-                    if let Some(target) = get_piece_at_pos(&board, (from.0, i)) {
-                        return Err(GameErr::IllegalMove("The Rook can not jump over other pieces.".into()));
+                // Sliding forward
+                if (to.1 - from.1).abs() != 1 && to.1 > from.1 {
+                    for i in (from.1 + 1)..to.1 {
+                        if get_piece_at_pos(&board_, (from.0, i)).is_some() {
+                            return Err(GameErr::IllegalMove("Can not jump over other pieces 1".into()));
+                        }
                     }
                 }
-
-                if let Some(target) = get_piece_at_pos(&board, (from.0, to.1)) {
-                    if (target.color != piece_from.color) {
-                        return Ok(target.get_points());
+                // Sliding backward
+                if (from.1 - to.1).abs() != 1 && from.1 < to.1 {
+                    for i in (to.1..from.1).rev() {
+                        if get_piece_at_pos(&board_, (from.0, i)).is_some() {
+                            return Err(GameErr::IllegalMove("Can not jump over other pieces 2".into()));
+                        }
                     }
-                } else{
-                    return Ok(0);
-                }
-
-            }
-            // Same Row
-            // TODOa7
-            if from.0 != to.0 && from.1 == to.1 {
-                if let Some(target) = get_piece_at_pos(&board, (to.0, to.1)) {
-                    if (target.color != piece_from.color) {
-                        return Ok(target.get_points());
-                    }
-                } else{
-                    return Ok(0);
                 }
             }
-            return Err(GameErr::IllegalMove("Illegal Knight move".into()));
+
+            // Move on same row
+
+            // Sliding Right
+
+            // Sliding Left
+
+
+            if let Some(piece_to) = get_piece_at_pos(&board_, to) {
+                return Ok(piece_to.get_points());
+            } else {
+                return Ok(0);
+            }
+            return Err(GameErr::IllegalMove("Illegal Rook move".into()));
+            // TODO: Implement Knight Check
         }
-
     }
-
     Ok(0)
 }

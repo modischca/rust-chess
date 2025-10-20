@@ -46,7 +46,7 @@ impl Game {
         for row  in 0..8 {
             for col in 0..8 {
                 match (row, col) {
-                    (4,0) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Rook })),
+                    (3,0) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Rook })),
                     (0,1) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Knight })),
                     (0,2) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Bishop })),
                     (0,3) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Queen })),
