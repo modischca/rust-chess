@@ -1,66 +1,110 @@
+use std::cmp::PartialEq;
 use std::ops::Index;
-use crate::game::{Color, Piece};
+use crate::errors::{GameErr, GameResult};
+use crate::game::{Color, PieceType};
+use crate::rule_engine;
 
-#[derive(Debug)]
-pub struct Game {
-    pub board: Vec<Option<Piece>>
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Piece {
+    pub color: Color,
+    pub piece_type: PieceType,
 }
 
+impl Piece {
+    pub fn get_char_code(&self) -> char {
+        match self.piece_type {
+            PieceType::Pawn => 'P',
+            PieceType::Knight => 'N',
+            PieceType::Bishop => 'B',
+            PieceType::Rook => 'R',
+            PieceType::Queen => 'Q',
+            PieceType::King => 'K',
+        }
+    }
+
+    pub fn get_points(&self) -> i32 {
+        match self.piece_type {
+            PieceType::Pawn => 1,
+            PieceType::Knight => 3,
+            PieceType::Bishop => 3,
+            PieceType::Rook => 5,
+            PieceType::Queen => 9,
+            PieceType::King => 100,
+        }
+    }
+}
+#[derive(Debug)]
+pub struct Game {
+    pub board: Vec<Option<Piece>>,
+    pub current_player: Color,
+    pub score_white: i32,
+    pub score_black: i32,
+}
 impl Game {
     pub fn new() -> Self {
         let mut b = Vec::new();
         for row  in 0..8 {
-            for cell in 0..8 {
-                match row {
-                    0 => {
-                        match cell {
-                            0 => b.push(Some(Piece::Rook(0, Color::White))),
-                            1 => b.push(Some(Piece::Knight(0, Color::White))),
-                            2 => b.push(Some(Piece::Bishop(0, Color::White))),
-                            3 => b.push(Some(Piece::Queen(0, Color::White))),
-                            4 => b.push(Some(Piece::King(0, Color::White))),
-                            5 => b.push(Some(Piece::Bishop(0, Color::White))),
-                            6 => b.push(Some(Piece::Knight(0, Color::White))),
-                            7 => b.push(Some(Piece::Rook(0, Color::White))),
-                            _ => b.push(None)
-                        }
-                    },
-                    1 => {
-                        b.push(Some(Piece::Pawn(0, Color::White)))
-                    }
-                    6 => {
-                        b.push(Some(Piece::Pawn(0, Color::Black)))
-                    },
-                    7 => {
-                        match cell {
-                            0 => b.push(Some(Piece::Rook(0, Color::Black))),
-                            1 => b.push(Some(Piece::Knight(0, Color::Black))),
-                            2 => b.push(Some(Piece::Bishop(0, Color::Black))),
-                            3 => b.push(Some(Piece::Queen(0, Color::Black))),
-                            4 => b.push(Some(Piece::King(0, Color::Black))),
-                            5 => b.push(Some(Piece::Bishop(0, Color::Black))),
-                            6 => b.push(Some(Piece::Knight(0, Color::Black))),
-                            7 => b.push(Some(Piece::Rook(0, Color::Black))),
-                            _ => b.push(None)
-                        }
-                    },                    
-                    _ => b.push(None)
+            for col in 0..8 {
+                match (row, col) {
+                    (4,0) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Rook })),
+                    (0,1) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Knight })),
+                    (0,2) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Bishop })),
+                    (0,3) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Queen })),
+                    (0,4) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::King })),
+                    (0,5) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Bishop })),
+                    (0,6) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Knight })),
+                    (0,7) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Rook })),
+                    (1, 1..8) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Pawn })),
+                    (6, 0..8) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::Pawn })), // kept color as in your original
+                    (7,0) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::Rook })),
+                    (7,1) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::Knight })),
+                    (7,2) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::Bishop })),
+                    (7,3) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::Queen })),
+                    (7,4) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::King })),
+                    (7,5) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::Bishop })),
+                    (7,6) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::Knight })),
+                    (7,7) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::Rook })),
+                    _ => b.push(None),
                 }
             }
 
         }
         Self {
-            board: b
+            board: b,
+            current_player: Color::White,
+            score_white: 0,
+            score_black: 0,
         }
     }
 
-    pub fn get_pos(&self, pos: (char, i32)) -> Option<&Piece> {
-        let chars = vec!['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-        let char_index = chars.iter().position(|f| f.eq(&pos.0)).expect("Invalid char");
-        let row = (8 * pos.1 - 8) as usize;
-        let board_index = char_index + row as usize;
+    pub fn move_piece(&mut self, from: (char, i32), to: (char, i32)) -> GameResult<()> {
 
-        let to_return = self.board.get(board_index).and_then(|f|{f.as_ref()});
-        to_return
+        let piece = match rule_engine::get_piece_at_pos(&self.board,from) {
+            Some(p) => p.clone(),                // requires Piece: Clone
+            None => return Err(GameErr::IllegalMove("No piece at position.".into())),
+        };
+        // the immutable borrow ended here
+
+        let points = rule_engine::is_allowed_move(&self.board, from, to, self.current_player)?;
+
+        let from_idx = rule_engine::get_index_based_on_pos(from);
+        self.board[from_idx] = None;
+
+        let to_idx = rule_engine::get_index_based_on_pos(to);
+        self.board[to_idx] = Some(piece);
+
+        self.current_player = match self.current_player {
+            Color::White => {
+                self.score_white += points;
+                Color::Black
+            },
+            Color::Black => {
+                self.score_black += points;
+                Color::White
+            },
+        };
+        Ok(())
     }
+
+
 }
