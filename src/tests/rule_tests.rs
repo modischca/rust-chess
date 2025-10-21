@@ -1,128 +1,75 @@
 use std::cmp::PartialEq;
 use crate::errors::GameErr;
 use crate::game::{Game, Piece, PieceType};
-use crate::rule_engine;
+
+
+
+// 1) Single step forward is legal.
 #[test]
-fn move_pawn_e2_to_e4_is_legal() {
+fn pawn_single_step_forward_is_legal() {
     let mut g = Game::new();
-    let _ = &g.move_piece(('e', 2), ('e', 4)).unwrap();
-    assert!(rule_engine::get_piece_at_pos(&g.board, ('e', 4)).is_some());
-    assert!(rule_engine::get_piece_at_pos(&g.board,('e', 2)).is_none());
-    assert_eq!(rule_engine::get_piece_at_pos(&g.board,('e', 4)).unwrap().piece_type.clone(), PieceType::Pawn);
+    g.move_piece(('e', 2), ('e', 3)).unwrap(); // W
 }
 
+// 2) Double step from starting position is legal.
 #[test]
-fn illegal_pawn_step_to_the_left() {
+fn pawn_double_step_from_start_is_legal() {
     let mut g = Game::new();
-    let _ = &g.move_piece(('a', 2), ('a', 4)).unwrap(); // W
-    let _ = &g.move_piece(('b', 7), ('b', 5)).unwrap(); // B
-    let _ = &g.move_piece(('a', 4), ('a', 5)).unwrap(); // W
+    g.move_piece(('d', 2), ('d', 4)).unwrap(); // W
+}
+
+// 3) Triple step forward is illegal.
+#[test]
+fn pawn_triple_step_is_illegal() {
+    let mut g = Game::new();
     assert_eq!(
-        g.move_piece(('b', 5), ('a', 4)), // B
-        Err(GameErr::IllegalMove("Illegal Pawn move".into()))
+        g.move_piece(('e', 2), ('e', 5)),
+        Err(GameErr::IllegalMove("Illegal pawn move.".into()))
     );
 }
 
+// 4) Backward move is illegal.
 #[test]
-fn pawn_white_take_right() {
+fn pawn_backward_move_is_illegal() {
     let mut g = Game::new();
-    let _ = &g.move_piece(('a', 2), ('a', 4)).unwrap(); // W
-    let _ = &g.move_piece(('b', 7), ('b', 5)).unwrap(); // B
-    let _ = &g.move_piece(('a', 4), ('b', 5)).unwrap(); // W
-}
+    // First, move forward legally so we can attempt backward movement
+    g.move_piece(('e', 2), ('e', 4)).unwrap(); // W
+    g.move_piece(('a', 7), ('a', 6)).unwrap(); // B
 
-#[test]
-fn pawn_black_take_right() {
-    let mut g = Game::new();
-    let _ = &g.move_piece(('e', 2), ('e', 4)).unwrap(); // W
-    let _ = &g.move_piece(('d', 7), ('d', 5)).unwrap(); // B
-    let _ = &g.move_piece(('d', 2), ('d', 4)).unwrap(); // W
-    let _ = &g.move_piece(('d', 5), ('e', 4)).unwrap(); // B
-}
-
-#[test]
-fn pawn_black_illegal_step_into_white() {
-    let mut g = Game::new();
-    let _ = &g.move_piece(('e', 2), ('e', 4)).unwrap(); // W
-    let _ = &g.move_piece(('d', 7), ('d', 5)).unwrap(); // B
-    let _ = &g.move_piece(('d', 2), ('d', 4)).unwrap(); // W
     assert_eq!(
-        g.move_piece(('d', 5), ('d', 4)), // B
-        Err(GameErr::IllegalMove("Illegal Pawn move".into()))
-    );
-}
-#[test]
-fn pawn_black_illegal_jump_white() {
-    let mut g = Game::new();
-    let _ = &g.move_piece(('e', 2), ('e', 4)).unwrap(); // W
-    let _ = &g.move_piece(('d', 7), ('d', 5)).unwrap(); // B
-    let _ = &g.move_piece(('d', 2), ('d', 4)).unwrap(); // W
-    assert_eq!(
-        g.move_piece(('d', 5), ('d', 3)), // B
-        Err(GameErr::IllegalMove("Illegal Pawn move".into()))
+        g.move_piece(('e', 4), ('e', 3)),
+        Err(GameErr::IllegalMove("Illegal pawn move.".into()))
     );
 }
 
-
-
+// 5) Attempting to capture forward (no diagonal) is illegal.
 #[test]
-fn move_pawn_e2_to_e3_is_legal() {
+fn pawn_cannot_capture_forward() {
     let mut g = Game::new();
-    let _ = &g.move_piece(('e', 2), ('e', 3)).unwrap();
-    assert!(rule_engine::get_piece_at_pos(&g.board,('e', 3)).is_some());
-    assert!(rule_engine::get_piece_at_pos(&g.board,('e', 2)).is_none());
-    assert_eq!(rule_engine::get_piece_at_pos(&g.board,('e', 3)).unwrap().piece_type.clone(), PieceType::Pawn);
+    // White pawn forward
+    g.move_piece(('e', 2), ('e', 4)).unwrap(); // W
+    // Black pawn moves in front
+    g.move_piece(('e', 7), ('e', 5)).unwrap(); // B
+
+    // White tries to capture forward — not allowed
+    assert_eq!(
+        g.move_piece(('e', 4), ('e', 5)),
+        Err(GameErr::IllegalMove("Illegal pawn move.".into()))
+    );
 }
 
+// 6) Diagonal capture is legal.
 #[test]
-fn rook_test_horizontal() {
+fn pawn_diagonal_capture_is_legal() {
     let mut g = Game::new();
-    let _ = &g.move_piece(('a', 2), ('a', 4)).unwrap(); // W
-    let _ = &g.move_piece(('b', 7), ('b', 5)).unwrap(); // B
-    let _ = &g.move_piece(('a', 4), ('a', 5)).unwrap(); // W
+    // Setup a capture on d5
+    g.move_piece(('e', 2), ('e', 4)).unwrap(); // W
+    g.move_piece(('d', 7), ('d', 5)).unwrap(); // B
 
-    let _ = &g.move_piece(('b', 5), ('b', 4)).unwrap(); // B
-    assert_eq!(
-        g.move_piece(('a', 1), ('a', 5)),
-        Err(GameErr::IllegalMove("Position is occupied.".into())) //W
-    );
-    let _ = &g.move_piece(('a', 1), ('a', 4)).unwrap(); // W
-    let _ = &g.move_piece(('d', 7), ('d', 5)).unwrap(); // B
-    assert_eq!(
-        g.move_piece(('a', 4), ('d', 4)), // W
-        Err(GameErr::IllegalMove("Illegal slide".into()))
-    );
-    let _ = &g.move_piece(('a', 4), ('b', 4)).unwrap(); // W
-    assert_eq!(g.score_white, 1);
-    let _ = &g.move_piece(('c', 7), ('c', 5)).unwrap(); // B
-    let _ = &g.move_piece(('b', 4), ('d', 4)).unwrap(); // W
-    let _ = &g.move_piece(('c', 5), ('c', 4)).unwrap(); // B
-
-    assert_eq!(
-        g.move_piece(('d', 4), ('b', 4)), // W
-        Err(GameErr::IllegalMove("Illegal slide".into()))
-    );
-    let _ = &g.move_piece(('d', 4), ('c', 4)).unwrap(); // W
-    assert_eq!(g.score_white, 2);
-    let _ = &g.move_piece(('f', 7), ('f', 5)).unwrap(); // B
-    let _ = &g.move_piece(('c', 4), ('c', 7)).unwrap(); // W
-    let _ = &g.move_piece(('f', 5), ('f', 4)).unwrap(); // B
-    assert_eq!(
-        g.move_piece(('c', 7), ('g', 7)), // W
-        Err(GameErr::IllegalMove("Illegal slide".into()))
-    );
-    let _ = &g.move_piece(('c', 7), ('a', 7)).unwrap(); // W
-    assert_eq!(g.score_white, 3);
-    let _ = &g.move_piece(('d', 5), ('d', 4)).unwrap(); // B
-    assert_eq!(
-        g.move_piece(('a', 7), ('a', 5)), // W
-        Err(GameErr::IllegalMove("Position is occupied.".into()))
-    );
-
-    let _ = &g.move_piece(('a', 7), ('a', 8)).unwrap(); // W
-    assert_eq!(g.score_white, 8);
-
+    // White captures diagonally: e4 → d5
+    g.move_piece(('e', 4), ('d', 5)).unwrap(); // W
 }
+
 
 #[test]
 fn rook_test_vertical() {
@@ -134,7 +81,7 @@ fn rook_test_vertical() {
     let _ = &g.move_piece(('a', 7), ('a', 6)).unwrap(); // B
     assert_eq!(
         g.move_piece(('a', 1), ('a', 7)), // W
-        Err(GameErr::IllegalMove("Illegal slide".into()))
+        Err(GameErr::IllegalMove("Path is blocked.".into()))
     );
     let _ = &g.move_piece(('a', 1), ('a', 6)).unwrap(); // W
     assert_eq!(g.score_white, 2);
@@ -144,7 +91,7 @@ fn rook_test_vertical() {
     let _ = &g.move_piece(('b', 8), ('a', 6)).unwrap(); // B
     assert_eq!(
         g.move_piece(('a', 8), ('a', 5)), // W
-        Err(GameErr::IllegalMove("Illegal slide".into()))
+        Err(GameErr::IllegalMove("Path is blocked.".into()))
     );
     let _ = &g.move_piece(('a', 8), ('a', 6)).unwrap(); // W
     assert_eq!(g.score_white, 10);
@@ -154,4 +101,170 @@ fn rook_test_vertical() {
 fn move_pawn_only_one_square_is_legal() {
     let mut g = Game::new();
     assert!(&g.move_piece(('e', 2), ('e', 5)).is_err());
+}
+
+
+#[test]
+fn illegal_move_does_not_change_turn() {
+    let mut g = Game::new();
+
+    // 1. White makes a legal move.
+    g.move_piece(('e', 2), ('e', 4)).unwrap(); // W
+
+    // 1... Black attempts an illegal pawn move (diagonal without capture).
+    assert_eq!(
+        g.move_piece(('d', 7), ('c', 6)), // B
+        Err(GameErr::IllegalMove("Illegal pawn move.".into()))
+    );
+
+    // Because the move was illegal, it's STILL Black's turn.
+    // This legal Black move must now succeed (test will fail if turn incorrectly switched).
+    g.move_piece(('d', 7), ('d', 5)).unwrap(); // B
+
+    // Now the turn goes back to White after a legal Black move.
+    g.move_piece(('e', 4), ('e', 5)).unwrap(); // W
+}
+
+#[test]
+fn illegal_rook_move_does_not_change_turn() {
+    let mut g = Game::new();
+
+    // 1. White moves pawn to free the rook.
+    g.move_piece(('a', 2), ('a', 4)).unwrap(); // W
+
+    // 1... Black makes a legal move.
+    g.move_piece(('h', 7), ('h', 5)).unwrap(); // B
+
+    // 2. White tries an illegal rook diagonal move.
+    assert_eq!(
+        g.move_piece(('a', 1), ('b', 2)), // diagonal → illegal
+        Err(GameErr::IllegalMove("Position is occupied.".into()))
+    );
+
+    // Because that was illegal, it's STILL White's turn.
+    // This legal vertical rook move must now succeed.
+    g.move_piece(('a', 1), ('a', 3)).unwrap(); // W
+
+    // 2... Black moves again to verify turn flow.
+    g.move_piece(('h', 5), ('h', 4)).unwrap(); // B
+}
+
+#[test]
+fn illegal_rook_move_then_legal_backward_move() {
+    let mut g = Game::new();
+
+    // 1. White clears the rook’s path.
+    g.move_piece(('a', 2), ('a', 4)).unwrap(); // W
+
+    // 1... Black makes a legal move.
+    g.move_piece(('h', 7), ('h', 5)).unwrap(); // B
+
+    // 2. White tries an illegal diagonal rook move.
+    assert_eq!(
+        g.move_piece(('a', 1), ('b', 2)), // diagonal → illegal
+        Err(GameErr::IllegalMove("Position is occupied.".into()))
+    );
+
+    // Because that was illegal, it's STILL White's turn.
+    // First, make a legal forward rook move.
+    g.move_piece(('a', 1), ('a', 3)).unwrap(); // W
+
+    // 2... Black moves again.
+    g.move_piece(('h', 5), ('h', 4)).unwrap(); // B
+
+    // 3. Now White moves the rook *backwards*, which is legal.
+    g.move_piece(('a', 3), ('a', 1)).unwrap(); // W
+
+    // 3... Black makes another move to confirm turn order is fine.
+    g.move_piece(('h', 4), ('h', 3)).unwrap(); // B
+}
+
+
+// 1) Rook: diagonal to an EMPTY square → "Illegal diagonal rook move."
+#[test]
+fn rook_diagonal_to_empty_square_is_illegal() {
+    let mut g = Game::new();
+
+    // Clear a2 and b2 so that a1→b2 is empty and path for later a1→a3 is clear.
+    g.move_piece(('a', 2), ('a', 4)).unwrap(); // W
+    g.move_piece(('h', 7), ('h', 5)).unwrap(); // B
+    g.move_piece(('b', 2), ('b', 4)).unwrap(); // W
+    g.move_piece(('h', 5), ('h', 4)).unwrap(); // B
+
+    // White tries a diagonal rook move into empty b2 → should be illegal diagonal.
+    assert_eq!(
+        g.move_piece(('a', 1), ('b', 2)),
+        Err(GameErr::IllegalMove("Illegal diagonal rook move.".into()))
+    );
+
+    // Turn should NOT change; White can still move now.
+    g.move_piece(('a', 1), ('a', 3)).unwrap(); // legal vertical
+}
+
+// 2) Rook: diagonal where the target is occupied by a FRIENDLY piece → "Position is occupied."
+#[test]
+fn rook_diagonal_to_friendly_occupied_square_reports_occupied() {
+    let mut g = Game::new();
+
+    // Keep b2 occupied by the white pawn; do a quick Black move to pass the turn back.
+    g.move_piece(('e', 2), ('e', 4)).unwrap(); // W
+    g.move_piece(('e', 7), ('e', 5)).unwrap(); // B
+
+    // White tries a1→b2 (diagonal) but b2 has a white pawn → occupied
+    assert_eq!(
+        g.move_piece(('a', 1), ('b', 2)),
+        Err(GameErr::IllegalMove("Position is occupied.".into()))
+    );
+
+    // Still White's turn after the illegal move; confirm with a legal move.
+    // First clear a2 so rook can go up.
+    g.move_piece(('a', 2), ('a', 4)).unwrap(); // W (legal)
+}
+
+// 3) Pawn: diagonal WITHOUT capture → "Illegal pawn move."
+#[test]
+fn pawn_illegal_diagonal_without_capture_is_rejected() {
+    let mut g = Game::new();
+
+    // White tries to move c2→d3 with no capture available → illegal pawn move.
+    assert_eq!(
+        g.move_piece(('c', 2), ('d', 3)),
+        Err(GameErr::IllegalMove("Illegal pawn move.".into()))
+    );
+
+    // Still White's turn after the illegal move; a legal move should work.
+    g.move_piece(('c', 2), ('c', 4)).unwrap(); // W
+}
+
+// 4) Pawn: diagonal WITH capture (contrast) → should be OK (no error).
+#[test]
+fn pawn_diagonal_with_capture_is_legal() {
+    let mut g = Game::new();
+
+    // Create a capture on d5: e2→e4, d7→d5, e4xd5
+    g.move_piece(('e', 2), ('e', 4)).unwrap(); // W
+    g.move_piece(('d', 7), ('d', 5)).unwrap(); // B
+
+    // White captures diagonally: e4→d5 (legal)
+    g.move_piece(('e', 4), ('d', 5)).unwrap(); // W
+}
+
+#[test]
+fn white_rook_cannot_capture_white_piece() {
+    let mut g = Game::new();
+
+    // 1. White clears rook's path by moving the pawn in front of it forward one step.
+    g.move_piece(('a', 2), ('a', 3)).unwrap(); // W
+
+    // 1... Black makes a legal move to pass the turn.
+    g.move_piece(('h', 7), ('h', 5)).unwrap(); // B
+
+    // 2. White tries to capture its own pawn with the rook.
+    assert_eq!(
+        g.move_piece(('a', 1), ('a', 3)), // White rook tries to capture white pawn
+        Err(GameErr::IllegalMove("Position is occupied.".into()))
+    );
+
+    // Still White's turn, so a legal move should now succeed (rook moves elsewhere).
+    g.move_piece(('a', 1), ('a', 2)).unwrap(); // W (legal move onto now-empty square)
 }

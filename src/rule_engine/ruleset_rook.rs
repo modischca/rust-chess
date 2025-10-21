@@ -3,9 +3,12 @@ use crate::game::{Color, Piece};
 use crate::rule_engine::{get_piece_at_pos, is_sliding_move};
 
 pub fn check(board: Vec<Option<Piece>>, from: (char, i32), to: (char, i32), current_player: Color) -> GameResult<i32> {
+
+    if from.1 != to.1 && from.0 != to.0 {
+        return Err(GameErr::IllegalMove("Illegal diagonal rook move.".into()))?
+    }
     if is_sliding_move(&from, &to) {
         let is_vertical_slide = from.1 != to.1 && from.0 == to.0;
-        // Horizontal
 
         let mut next_check_pos = from.0 as i32 + 1;
         let mut stop_position = to.0 as i32;
@@ -30,13 +33,7 @@ pub fn check(board: Vec<Option<Piece>>, from: (char, i32), to: (char, i32), curr
                 row = from.1;
             }
             if get_piece_at_pos(&board, (c, row)) != None {
-                return Err(GameErr::IllegalMove("Illegal slide".into()))?
-            }
-            next_check_pos = next_check_pos + 1;
-        }
-        while next_check_pos < stop_position {
-            if get_piece_at_pos(&board, (from.0, next_check_pos)) != None {
-                return Err(GameErr::IllegalMove("Illegal slide".into()))?
+                return Err(GameErr::IllegalMove("Path is blocked.".into()))?
             }
             next_check_pos = next_check_pos + 1;
         }

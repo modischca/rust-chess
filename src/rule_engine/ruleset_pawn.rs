@@ -29,5 +29,5 @@ pub fn check(board: Vec<Option<Piece>>, from: (char, i32), to: (char, i32), curr
             }
         }
     }
-    Err(GameErr::IllegalMove("Illegal Pawn move".into()))
+    Err(GameErr::IllegalMove("Illegal pawn move.".into()))
 }
