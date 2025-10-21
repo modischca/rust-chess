@@ -7,8 +7,9 @@ use crate::rule_engine;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Piece {
     pub color: Color,
-    pub piece_type: PieceType,
+    pub piece_type: PieceType
 }
+
 
 impl Piece {
     pub fn get_char_code(&self) -> char {
@@ -46,7 +47,7 @@ impl Game {
         for row  in 0..8 {
             for col in 0..8 {
                 match (row, col) {
-                    (3,0) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Rook })),
+                    (0,0) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Rook })),
                     (0,1) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Knight })),
                     (0,2) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Bishop })),
                     (0,3) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Queen })),
@@ -54,7 +55,7 @@ impl Game {
                     (0,5) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Bishop })),
                     (0,6) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Knight })),
                     (0,7) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Rook })),
-                    (1, 1..8) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Pawn })),
+                    (1, 0..8) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Pawn })),
                     (6, 0..8) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::Pawn })), // kept color as in your original
                     (7,0) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::Rook })),
                     (7,1) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::Knight })),
@@ -83,7 +84,14 @@ impl Game {
             Some(p) => p.clone(),                // requires Piece: Clone
             None => return Err(GameErr::IllegalMove("No piece at position.".into())),
         };
-        // the immutable borrow ended here
+
+        if piece.color != self.current_player {
+            Err(GameErr::IllegalMove("You can only play your own pieces.".into()))?
+        }
+
+        if from == to {
+            return Err(GameErr::IllegalMove("No move registered.".into()));
+        }
 
         let points = rule_engine::is_allowed_move(&self.board, from, to, self.current_player)?;
 
