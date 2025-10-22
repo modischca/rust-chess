@@ -2,7 +2,7 @@ use crate::errors::{GameErr, GameResult};
 use crate::game::Color;
 use crate::rule_engine;
 use crate::game::Piece;
-pub fn check(board: Vec<Option<Piece>>, from: (char, i32), to: (char, i32), current_player: Color) -> GameResult<i32> {
+pub fn check(board: [Option<Piece>; 64], from: (char, i32), to: (char, i32), current_player: Color) -> GameResult<i32> {
     let piece_from = rule_engine::get_piece_at_pos(&board,from);
     let piece_to = rule_engine::get_piece_at_pos(&board,to);
 
@@ -29,5 +29,5 @@ pub fn check(board: Vec<Option<Piece>>, from: (char, i32), to: (char, i32), curr
             }
         }
     }
-    Err(GameErr::IllegalMove("Illegal pawn move.".into()))
+    Err(GameErr::IllegalPawnMove)
 }

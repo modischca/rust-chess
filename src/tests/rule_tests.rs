@@ -24,7 +24,7 @@ fn pawn_triple_step_is_illegal() {
     let mut g = Game::new();
     assert_eq!(
         g.move_piece(('e', 2), ('e', 5)),
-        Err(GameErr::IllegalMove("Illegal pawn move.".into()))
+        Err(GameErr::IllegalPawnMove)
     );
 }
 
@@ -38,7 +38,7 @@ fn pawn_backward_move_is_illegal() {
 
     assert_eq!(
         g.move_piece(('e', 4), ('e', 3)),
-        Err(GameErr::IllegalMove("Illegal pawn move.".into()))
+        Err(GameErr::IllegalPawnMove)
     );
 }
 
@@ -54,7 +54,7 @@ fn pawn_cannot_capture_forward() {
     // White tries to capture forward — not allowed
     assert_eq!(
         g.move_piece(('e', 4), ('e', 5)),
-        Err(GameErr::IllegalMove("Illegal pawn move.".into()))
+        Err(GameErr::IllegalPawnMove)
     );
 }
 
@@ -81,7 +81,7 @@ fn rook_test_vertical() {
     let _ = &g.move_piece(('a', 7), ('a', 6)).unwrap(); // B
     assert_eq!(
         g.move_piece(('a', 1), ('a', 7)), // W
-        Err(GameErr::IllegalMove("Path is blocked.".into()))
+        Err(GameErr::PathIsBlocked)
     );
     let _ = &g.move_piece(('a', 1), ('a', 6)).unwrap(); // W
     assert_eq!(g.score_white, 2);
@@ -91,7 +91,7 @@ fn rook_test_vertical() {
     let _ = &g.move_piece(('b', 8), ('a', 6)).unwrap(); // B
     assert_eq!(
         g.move_piece(('a', 8), ('a', 5)), // W
-        Err(GameErr::IllegalMove("Path is blocked.".into()))
+        Err(GameErr::PathIsBlocked)
     );
     let _ = &g.move_piece(('a', 8), ('a', 6)).unwrap(); // W
     assert_eq!(g.score_white, 10);
@@ -114,7 +114,7 @@ fn illegal_move_does_not_change_turn() {
     // 1... Black attempts an illegal pawn move (diagonal without capture).
     assert_eq!(
         g.move_piece(('d', 7), ('c', 6)), // B
-        Err(GameErr::IllegalMove("Illegal pawn move.".into()))
+        Err(GameErr::IllegalPawnMove)
     );
 
     // Because the move was illegal, it's STILL Black's turn.
@@ -138,7 +138,7 @@ fn illegal_rook_move_does_not_change_turn() {
     // 2. White tries an illegal rook diagonal move.
     assert_eq!(
         g.move_piece(('a', 1), ('b', 2)), // diagonal → illegal
-        Err(GameErr::IllegalMove("Position is occupied.".into()))
+        Err(GameErr::PositionOccupied)
     );
 
     // Because that was illegal, it's STILL White's turn.
@@ -162,7 +162,7 @@ fn illegal_rook_move_then_legal_backward_move() {
     // 2. White tries an illegal diagonal rook move.
     assert_eq!(
         g.move_piece(('a', 1), ('b', 2)), // diagonal → illegal
-        Err(GameErr::IllegalMove("Position is occupied.".into()))
+        Err(GameErr::PositionOccupied)
     );
 
     // Because that was illegal, it's STILL White's turn.
@@ -194,7 +194,7 @@ fn rook_diagonal_to_empty_square_is_illegal() {
     // White tries a diagonal rook move into empty b2 → should be illegal diagonal.
     assert_eq!(
         g.move_piece(('a', 1), ('b', 2)),
-        Err(GameErr::IllegalMove("Illegal diagonal rook move.".into()))
+        Err(GameErr::IllegalRookMove)
     );
 
     // Turn should NOT change; White can still move now.
@@ -213,7 +213,7 @@ fn rook_diagonal_to_friendly_occupied_square_reports_occupied() {
     // White tries a1→b2 (diagonal) but b2 has a white pawn → occupied
     assert_eq!(
         g.move_piece(('a', 1), ('b', 2)),
-        Err(GameErr::IllegalMove("Position is occupied.".into()))
+        Err(GameErr::PositionOccupied)
     );
 
     // Still White's turn after the illegal move; confirm with a legal move.
@@ -229,7 +229,7 @@ fn pawn_illegal_diagonal_without_capture_is_rejected() {
     // White tries to move c2→d3 with no capture available → illegal pawn move.
     assert_eq!(
         g.move_piece(('c', 2), ('d', 3)),
-        Err(GameErr::IllegalMove("Illegal pawn move.".into()))
+        Err(GameErr::IllegalPawnMove)
     );
 
     // Still White's turn after the illegal move; a legal move should work.
@@ -262,7 +262,7 @@ fn white_rook_cannot_capture_white_piece() {
     // 2. White tries to capture its own pawn with the rook.
     assert_eq!(
         g.move_piece(('a', 1), ('a', 3)), // White rook tries to capture white pawn
-        Err(GameErr::IllegalMove("Position is occupied.".into()))
+        Err(GameErr::PositionOccupied)
     );
 
     // Still White's turn, so a legal move should now succeed (rook moves elsewhere).

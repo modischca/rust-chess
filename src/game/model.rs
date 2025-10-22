@@ -36,42 +36,38 @@ impl Piece {
 }
 #[derive(Debug)]
 pub struct Game {
-    pub board: Vec<Option<Piece>>,
+    pub board: [Option<Piece>; 64],
     pub current_player: Color,
     pub score_white: i32,
     pub score_black: i32,
 }
 impl Game {
     pub fn new() -> Self {
-        let mut b = Vec::new();
-        for row  in 0..8 {
-            for col in 0..8 {
-                match (row, col) {
-                    (0,0) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Rook })),
-                    (0,1) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Knight })),
-                    (0,2) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Bishop })),
-                    (0,3) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Queen })),
-                    (0,4) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::King })),
-                    (0,5) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Bishop })),
-                    (0,6) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Knight })),
-                    (0,7) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Rook })),
-                    (1, 0..8) => b.push(Some(Piece { color: Color::White, piece_type: PieceType::Pawn })),
-                    (6, 0..8) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::Pawn })), // kept color as in your original
-                    (7,0) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::Rook })),
-                    (7,1) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::Knight })),
-                    (7,2) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::Bishop })),
-                    (7,3) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::Queen })),
-                    (7,4) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::King })),
-                    (7,5) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::Bishop })),
-                    (7,6) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::Knight })),
-                    (7,7) => b.push(Some(Piece { color: Color::Black, piece_type: PieceType::Rook })),
-                    _ => b.push(None),
-                }
+        let board :[Option<Piece>; 64] = std::array::from_fn(|i| {
+            match i {
+                0 => Some(Piece { color: Color::White, piece_type: PieceType::Rook }),
+                1 => Some(Piece { color: Color::White, piece_type: PieceType::Knight }),
+                2 => Some(Piece { color: Color::White, piece_type: PieceType::Bishop }),
+                3 => Some(Piece { color: Color::White, piece_type: PieceType::Queen }),
+                4 => Some(Piece { color: Color::White, piece_type: PieceType::King }),
+                5 => Some(Piece { color: Color::White, piece_type: PieceType::Bishop }),
+                6 => Some(Piece { color: Color::White, piece_type: PieceType::Knight }),
+                7 => Some(Piece { color: Color::White, piece_type: PieceType::Rook }),
+                8..=15 => Some(Piece { color: Color::White, piece_type: PieceType::Pawn }),
+                48..=55 => Some(Piece { color: Color::Black, piece_type: PieceType::Pawn }),
+                56 => Some(Piece { color: Color::Black, piece_type: PieceType::Rook }),
+                57 => Some(Piece { color: Color::Black, piece_type: PieceType::Knight }),
+                58 => Some(Piece { color: Color::Black, piece_type: PieceType::Bishop }),
+                59 => Some(Piece { color: Color::Black, piece_type: PieceType::Queen }),
+                60 => Some(Piece { color: Color::Black, piece_type: PieceType::King }),
+                61 => Some(Piece { color: Color::Black, piece_type: PieceType::Bishop }),
+                62 => Some(Piece { color: Color::Black, piece_type: PieceType::Knight }),
+                63 => Some(Piece { color: Color::Black, piece_type: PieceType::Rook }),
+                _ => None,
             }
-
-        }
+        });
         Self {
-            board: b,
+            board,
             current_player: Color::White,
             score_white: 0,
             score_black: 0,
@@ -82,15 +78,15 @@ impl Game {
 
         let piece = match rule_engine::get_piece_at_pos(&self.board,from) {
             Some(p) => p.clone(),                // requires Piece: Clone
-            None => return Err(GameErr::IllegalMove("No piece at position.".into())),
+            None => return Err(GameErr::NoPieceAtPosition),
         };
 
         if piece.color != self.current_player {
-            Err(GameErr::IllegalMove("You can only play your own pieces.".into()))?
+            Err(GameErr::IllegalMoveOnOtherPlayer)?
         }
 
         if from == to {
-            return Err(GameErr::IllegalMove("No move registered.".into()));
+            return Err(GameErr::NoMoveRegistered);
         }
 
         let points = rule_engine::is_allowed_move(&self.board, from, to, self.current_player)?;
