@@ -74,55 +74,68 @@ fn step(index: i32, step: i32, direction_up: bool, direction_left: bool) -> i32{
     end_pos
 }
 
-
 #[test]
-fn test_two_plus_one() {
-
-    // UP 2
+fn test_two_plus_one_up_2_basic() {
     let index = rule_engine::get_index_based_on_pos(('b', 1)) as i32;
     assert_ne!(two_plus_one(index, true, false), -1);
 
     let index = rule_engine::get_index_based_on_pos(('a', 3)) as i32;
     assert_ne!(two_plus_one(index, true, false), -1);
+}
 
+#[test]
+fn test_two_plus_one_up_2_with_flags() {
     let index = rule_engine::get_index_based_on_pos(('b', 1)) as i32;
     assert_ne!(two_plus_one(index, true, true), -1);
 
     let index = rule_engine::get_index_based_on_pos(('a', 3)) as i32;
     assert_eq!(two_plus_one(index, true, true), -1);
+}
 
+#[test]
+fn test_two_plus_one_up_2_edge_cases() {
     let index = rule_engine::get_index_based_on_pos(('g', 1)) as i32;
     assert_ne!(two_plus_one(index, true, false), -1);
 
     let index = rule_engine::get_index_based_on_pos(('h', 3)) as i32;
     assert_eq!(two_plus_one(index, true, false), -1);
+}
 
-    // DOWN 2
-
+#[test]
+fn test_two_plus_one_down_2_basic() {
     let index = rule_engine::get_index_based_on_pos(('b', 1)) as i32;
     assert_eq!(two_plus_one(index, false, false), -1);
 
     let index = rule_engine::get_index_based_on_pos(('b', 1)) as i32;
     assert_eq!(two_plus_one(index, false, false), -1);
+}
 
+#[test]
+fn test_two_plus_one_down_2_bottom_cases() {
     let index = rule_engine::get_index_based_on_pos(('b', 8)) as i32;
     assert_ne!(two_plus_one(index, false, false), -1);
 
     let index = rule_engine::get_index_based_on_pos(('b', 8)) as i32;
     assert_ne!(two_plus_one(index, false, true), -1);
+}
 
+#[test]
+fn test_two_plus_one_invalid_moves() {
     let index = rule_engine::get_index_based_on_pos(('b', 8)) as i32;
     assert_eq!(two_plus_one(index, true, false), -1);
 
     let index = rule_engine::get_index_based_on_pos(('b', 8)) as i32;
     assert_eq!(two_plus_one(index, true, true), -1);
+}
 
-
+#[test]
+fn test_one_plus_two_valid_case() {
     let index = rule_engine::get_index_based_on_pos(('c', 3)) as i32;
     assert_ne!(one_plus_two(index, true, false), -1);
+}
 
-
+#[test]
+fn test_one_plus_two_invalid_case() {
     let index = rule_engine::get_index_based_on_pos(('a', 2)) as i32;
     assert_eq!(one_plus_two(index, true, true), -1);
-
 }
