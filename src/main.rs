@@ -5,7 +5,7 @@ use crate::game::Game;
 mod errors;
 mod game;
 mod tests;
-mod rule_engine;
+mod ruleengine;
 
 #[allow(unused)]
 fn main() {
@@ -36,7 +36,6 @@ fn read_user_input(mut g: Game) {
             return read_user_input(g)
          }
     };
-
     match moved {
         Ok(_) => {
             print(&g);

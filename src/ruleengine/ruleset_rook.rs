@@ -1,6 +1,6 @@
 use crate::errors::{GameErr, GameResult};
 use crate::game::{Color, Piece};
-use crate::rule_engine::{get_piece_at_pos, is_sliding_move};
+use crate::ruleengine::{get_piece_at_pos, is_sliding_move};
 
 pub fn check(board: [Option<Piece>; 64], from: (char, i32), to: (char, i32), current_player: Color) -> GameResult<i32> {
 

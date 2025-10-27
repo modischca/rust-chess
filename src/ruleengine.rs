@@ -2,13 +2,19 @@ mod ruleset_pawn;
 mod ruleset_rook;
 mod ruleset_knight;
 
+mod ruleset_bishop;
+
 use crate::errors::{GameErr, GameResult};
 use crate::game::*;
-use crate::rule_engine;
-
+use crate::ruleengine;
 pub fn get_piece_at_pos(board: &[Option<Piece>; 64], pos: (char, i32)) -> Option<&Piece> {
     let board_index = get_index_based_on_pos(pos);
-    let to_return = board.get(board_index).and_then(|f|{f.as_ref()});
+    let to_return = board.get(board_index).and_then(|f| { f.as_ref() });
+    to_return
+}
+
+pub fn get_piece_at_index(board: &[Option<Piece>; 64], index: usize) -> Option<&Piece> {
+    let to_return = board.get(index).and_then(|f|{f.as_ref()});
     to_return
 }
 
@@ -22,9 +28,9 @@ pub fn get_index_based_on_pos(pos: (char, i32)) -> usize {
 
 pub fn is_allowed_move(board: &[Option<Piece>; 64], from: (char, i32), to: (char, i32), current_player: Color) -> GameResult<i32> {
 
-    let piece_from = rule_engine::get_piece_at_pos(&board,from).expect("No piece at position.");
+    let piece_from = ruleengine::get_piece_at_pos(&board, from).expect("No piece at position.");
 
-    let piece_to = rule_engine::get_piece_at_pos(&board,to);
+    let piece_to = ruleengine::get_piece_at_pos(&board, to);
 
     // Check that the position is empty, or that it is not occupied by the same color.
     if let Some(piece_to) = piece_to {
@@ -42,6 +48,9 @@ pub fn is_allowed_move(board: &[Option<Piece>; 64], from: (char, i32), to: (char
         },
         PieceType::Knight => {
             ruleset_knight::check(board.clone(), from ,to, current_player)
+        },
+        PieceType::Bishop => {
+            ruleset_bishop::check(board.clone(), from ,to, current_player)
         }
         _ => {
             Ok(0)

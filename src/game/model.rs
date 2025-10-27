@@ -2,7 +2,7 @@ use std::cmp::PartialEq;
 use std::ops::Index;
 use crate::errors::{GameErr, GameResult};
 use crate::game::{Color, PieceType};
-use crate::rule_engine;
+use crate::ruleengine;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Piece {
@@ -76,7 +76,7 @@ impl Game {
 
     pub fn move_piece(&mut self, from: (char, i32), to: (char, i32)) -> GameResult<()> {
 
-        let piece = match rule_engine::get_piece_at_pos(&self.board,from) {
+        let piece = match ruleengine::get_piece_at_pos(&self.board, from) {
             Some(p) => p.clone(),                // requires Piece: Clone
             None => return Err(GameErr::NoPieceAtPosition),
         };
@@ -89,12 +89,12 @@ impl Game {
             return Err(GameErr::NoMoveRegistered);
         }
 
-        let points = rule_engine::is_allowed_move(&self.board, from, to, self.current_player)?;
+        let points = ruleengine::is_allowed_move(&self.board, from, to, self.current_player)?;
 
-        let from_idx = rule_engine::get_index_based_on_pos(from);
+        let from_idx = ruleengine::get_index_based_on_pos(from);
         self.board[from_idx] = None;
 
-        let to_idx = rule_engine::get_index_based_on_pos(to);
+        let to_idx = ruleengine::get_index_based_on_pos(to);
         self.board[to_idx] = Some(piece);
 
         self.current_player = match self.current_player {

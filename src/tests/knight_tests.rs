@@ -17,3 +17,4 @@ fn illegal_knight_move_does_not_change_turn() {
     // 1... Black responds to confirm turn flow.
     g.move_piece(('h', 7), ('h', 6)).unwrap(); // B
 }
+
