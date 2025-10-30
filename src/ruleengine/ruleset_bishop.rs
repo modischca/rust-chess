@@ -17,35 +17,41 @@ pub fn check(board: [Option<Piece>; 64], from: (char, i32), to: (char, i32), cur
 
         let up_right_positions = step(index, Direction::UpRight);
         let found_up_right = up_right_positions.iter().find(|&i| i.eq(&target_index));
-        if found_up_right.is_some() && !is_path_blocked_up(board, up_right_positions, target_index){
+        if found_up_right.is_some() && !is_path_blocked_up(board, up_right_positions, target_index)? {
             return check_score_and_return(board, to, current_player);
         }
 
         let up_left_positions = step(index, Direction::UpLeft);
         let found_up_left = up_left_positions.iter().find(|&i| i.eq(&target_index));
-        if found_up_left.is_some() && !is_path_blocked_up(board, up_left_positions, target_index) {
+        if found_up_left.is_some() && !is_path_blocked_up(board, up_left_positions, target_index)? {
             return check_score_and_return(board, to, current_player);
         }
 
         let down_right_positions = step(index, Direction::DownRight);
         let found_down_right = down_right_positions.iter().find(|&i| i.eq(&target_index));
-        if found_down_right.is_some() && !is_path_blocked_down(board, down_right_positions, target_index){
+        if found_down_right.is_some() && !is_path_blocked_down(board, down_right_positions, target_index)? {
             return check_score_and_return(board, to, current_player);
         }
 
         let down_left_positions = step(index, Direction::DownRight);
         let found_down_left = down_left_positions.iter().find(|&i| i.eq(&target_index));
-        if found_down_left.is_some() && !is_path_blocked_down(board, down_left_positions, target_index) {
+        if found_down_left.is_some() && !is_path_blocked_down(board, down_left_positions, target_index)? {
             return check_score_and_return(board, to, current_player);
         }
 
-        Err(GameErr::PathIsBlocked)
+        Err(GameErr::IllegalBishopMove)
 }
-fn is_path_blocked_up(board: [Option<Piece>; 64], selection: Vec<i32>, target_index: i32) -> bool {
-    selection.iter().find(|&i| ruleengine::get_piece_at_index(&board, i.clone() as usize).is_some() && i < &target_index).is_some()
+fn is_path_blocked_up(board: [Option<Piece>; 64], selection: Vec<i32>, target_index: i32) -> Result<bool, GameErr> {
+    if selection.iter().find(|&i| ruleengine::get_piece_at_index(&board, i.clone() as usize).is_some() && i < &target_index).is_some() {
+        return Err(GameErr::PathIsBlocked);
+    }
+    return Ok(false);
 }
-fn is_path_blocked_down(board: [Option<Piece>; 64], selection: Vec<i32>, target_index: i32) -> bool {
-    selection.iter().find(|&i| ruleengine::get_piece_at_index(&board, i.clone() as usize).is_some() && i > &target_index).is_some()
+fn is_path_blocked_down(board: [Option<Piece>; 64], selection: Vec<i32>, target_index: i32) -> Result<bool, GameErr> {
+    if selection.iter().find(|&i| ruleengine::get_piece_at_index(&board, i.clone() as usize).is_some() && i > &target_index).is_some() {
+        return Err(GameErr::PathIsBlocked);
+    }
+    return Ok(false);
 }
 
 fn check_score_and_return (board: [Option<Piece>; 64], to: (char, i32), current_player: Color) -> GameResult<i32>{

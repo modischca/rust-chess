@@ -8,7 +8,7 @@ fn bishop_non_diagonal_illegal_requires_redo_same_turn() {
     // 1. White tries a non-diagonal bishop move (illegal).
     assert_eq!(
         g.move_piece(('f', 1), ('f', 3)),
-        Err(GameErr::PathIsBlocked)
+        Err(GameErr::IllegalBishopMove)
     );
 
     // Still White's turn — redo with a legal White move.
