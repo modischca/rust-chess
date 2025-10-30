@@ -2,7 +2,7 @@ use std::cmp::PartialEq;
 use crate::errors::{GameErr, GameResult};
 use crate::game::{Color, Game, Piece};
 use crate::ruleengine;
-use crate::ruleengine::get_piece_at_pos;
+use crate::ruleengine::{get_piece_at_index, get_piece_at_pos};
 
 #[derive(PartialEq)]
 enum Direction {
@@ -15,40 +15,40 @@ pub fn check(board: [Option<Piece>; 64], from: (char, i32), to: (char, i32), cur
     let index = ruleengine::get_index_based_on_pos(from) as i32;
     let target_index = ruleengine::get_index_based_on_pos(to) as i32;
 
-    let mut allowed_positions = step(index, Direction::UpRight);
-    for &i in allowed_positions.iter() {
-        if (&i < &target_index) {
-            if &i != &target_index  && ruleengine::get_piece_at_index(&board, i as usize).is_some()  {
-                return Err(GameErr::IllegalBishopMove);
-            }
+        let up_right_positions = step(index, Direction::UpRight);
+        let found_up_right = up_right_positions.iter().find(|&i| i.eq(&target_index));
+        if found_up_right.is_some() && !is_path_blocked_up(board, up_right_positions, target_index){
+            return check_score_and_return(board, to, current_player);
         }
-    }
 
-    allowed_positions.extend(step(index, Direction::UpLeft));
-    for &i in allowed_positions.iter() {
-        if (&i < &target_index) {
-            if &i != &target_index  && ruleengine::get_piece_at_index(&board, i as usize).is_some()  {
-                return Err(GameErr::IllegalBishopMove);
-            }
+        let up_left_positions = step(index, Direction::UpLeft);
+        let found_up_left = up_left_positions.iter().find(|&i| i.eq(&target_index));
+        if found_up_left.is_some() && !is_path_blocked_up(board, up_left_positions, target_index) {
+            return check_score_and_return(board, to, current_player);
         }
-    }
-    allowed_positions.extend(step(index, Direction::DownRight));
-    for &i in allowed_positions.iter() {
-        if (&i > &target_index) {
-            if &i != &target_index  && ruleengine::get_piece_at_index(&board, i as usize).is_some()  {
-                return Err(GameErr::IllegalBishopMove);
-            }
-        }
-    }
-    allowed_positions.extend(step(index, Direction::DownLeft));
-    for &i in allowed_positions.iter() {
-        if (&i > &target_index) {
-            if &i != &target_index  && ruleengine::get_piece_at_index(&board, i as usize).is_some()  {
-                return Err(GameErr::IllegalBishopMove);
-            }
-        }
-    }
 
+        let down_right_positions = step(index, Direction::DownRight);
+        let found_down_right = down_right_positions.iter().find(|&i| i.eq(&target_index));
+        if found_down_right.is_some() && !is_path_blocked_down(board, down_right_positions, target_index){
+            return check_score_and_return(board, to, current_player);
+        }
+
+        let down_left_positions = step(index, Direction::DownRight);
+        let found_down_left = down_left_positions.iter().find(|&i| i.eq(&target_index));
+        if found_down_left.is_some() && !is_path_blocked_down(board, down_left_positions, target_index) {
+            return check_score_and_return(board, to, current_player);
+        }
+
+        Err(GameErr::PathIsBlocked)
+}
+fn is_path_blocked_up(board: [Option<Piece>; 64], selection: Vec<i32>, target_index: i32) -> bool {
+    selection.iter().find(|&i| ruleengine::get_piece_at_index(&board, i.clone() as usize).is_some() && i < &target_index).is_some()
+}
+fn is_path_blocked_down(board: [Option<Piece>; 64], selection: Vec<i32>, target_index: i32) -> bool {
+    selection.iter().find(|&i| ruleengine::get_piece_at_index(&board, i.clone() as usize).is_some() && i > &target_index).is_some()
+}
+
+fn check_score_and_return (board: [Option<Piece>; 64], to: (char, i32), current_player: Color) -> GameResult<i32>{
     if let Some(piece_at_pos) = get_piece_at_pos(&board, to) {
         if piece_at_pos.color == current_player {
             return Err(GameErr::IllegalBishopMove);
@@ -56,7 +56,6 @@ pub fn check(board: [Option<Piece>; 64], from: (char, i32), to: (char, i32), cur
         return Ok(piece_at_pos.get_points());
     }
     Ok(0)
-
 }
 
 

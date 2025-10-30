@@ -5,7 +5,7 @@ use crate::ruleengine::{get_piece_at_pos, is_sliding_move};
 pub fn check(board: [Option<Piece>; 64], from: (char, i32), to: (char, i32), current_player: Color) -> GameResult<i32> {
 
     if from.1 != to.1 && from.0 != to.0 {
-        return Err(GameErr::IllegalRookMove)?
+        return Err(GameErr::IllegalRookMove)
     }
     if is_sliding_move(&from, &to) {
         let is_vertical_slide = from.1 != to.1 && from.0 == to.0;
@@ -33,7 +33,7 @@ pub fn check(board: [Option<Piece>; 64], from: (char, i32), to: (char, i32), cur
                 row = from.1;
             }
             if get_piece_at_pos(&board, (c, row)) != None {
-                return Err(GameErr::PathIsBlocked)?
+                return Err(GameErr::PathIsBlocked)
             }
             next_check_pos = next_check_pos + 1;
         }

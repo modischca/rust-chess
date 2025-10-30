@@ -13,6 +13,9 @@ fn main() {
     println!("Type 'QUIT' to quit.");
     let mut g = Game::new();
     print(&g);
+    &g.move_piece(('d', 2), ('d', 4)).unwrap();
+    &g.move_piece(('e', 7), ('e', 5)).unwrap();
+    print(&g);
     read_user_input(g);
 }
 
