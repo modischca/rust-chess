@@ -4,7 +4,7 @@ mod ruleset_knight;
 mod ruleset_bishop;
 mod ruleset_king;
 
-use crate::errors::{GameErr, GameResult};
+use crate::game::errors::{GameErr, GameResult};
 use crate::game::*;
 use crate::ruleengine;
 pub fn get_piece_at_pos(board: &[Option<Piece>; 64], pos: (char, i32)) -> Option<&Piece> {

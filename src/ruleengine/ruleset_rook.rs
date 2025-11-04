@@ -1,4 +1,4 @@
-use crate::errors::{GameErr, GameResult};
+use crate::game::errors::{GameErr, GameResult};
 use crate::game::{Color, Piece};
 use crate::ruleengine::{get_piece_at_pos};
 

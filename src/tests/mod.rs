@@ -7,3 +7,4 @@ mod game_tests;
 
 mod castling_tests;
 mod queen_tests;
+mod king_tests;

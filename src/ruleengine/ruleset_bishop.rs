@@ -1,5 +1,5 @@
 use std::cmp::PartialEq;
-use crate::errors::{GameErr, GameResult};
+use crate::game::errors::{GameErr, GameResult};
 use crate::game::{Color, Game, Piece};
 use crate::ruleengine;
 use crate::ruleengine::{get_piece_at_index, get_piece_at_pos};

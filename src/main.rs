@@ -1,8 +1,5 @@
-use crate::errors::GameErr::IllegalMove;
-use crate::errors::GameResult;
 use crate::game::Game;
 
-mod errors;
 mod game;
 mod tests;
 mod ruleengine;
@@ -19,6 +16,7 @@ fn main() {
 
 fn read_user_input(mut g: Game) {
     let mut input = String::from("");
+    println!(" ");
     println!("Current move is: {}", &g.current_player.display());
     println!("Please enter a move in the format 'a1=>a2': ");
     std::io::stdin().read_line(&mut input).expect("Invalid input");

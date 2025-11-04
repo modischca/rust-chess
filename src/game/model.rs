@@ -1,7 +1,7 @@
 use std::cmp::PartialEq;
 use std::fmt;
 use std::fmt::Formatter;
-use crate::errors::{GameErr, GameResult};
+use crate::game::errors::{GameErr, GameResult};
 use crate::game::{Color, PieceType};
 use crate::ruleengine;
 

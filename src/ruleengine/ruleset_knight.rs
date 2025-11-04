@@ -1,5 +1,5 @@
 use log::debug;
-use crate::errors::{GameErr, GameResult};
+use crate::game::errors::{GameErr, GameResult};
 use crate::game::{Color, Piece};
 use crate::ruleengine;
 

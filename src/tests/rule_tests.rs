@@ -1,5 +1,5 @@
 use std::cmp::PartialEq;
-use crate::errors::GameErr;
+use crate::game::errors::GameErr;
 use crate::game::{Game, Piece, PieceType};
 
 

@@ -1,4 +1,4 @@
-use crate::errors::{GameErr, GameResult};
+use crate::game::errors::{GameErr, GameResult};
 use crate::game::Color;
 use crate::ruleengine;
 use crate::game::Piece;
