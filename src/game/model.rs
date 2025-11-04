@@ -5,6 +5,16 @@ use crate::game::errors::{GameErr, GameResult};
 use crate::game::{Color, PieceType};
 use crate::ruleengine;
 
+
+pub struct Position (char, i32);
+/*
+impl Position {
+
+    fn new(char: char, row: i32) -> Result<Self> {
+
+    }
+
+}*/
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Piece {
     pub color: Color,
@@ -50,6 +60,8 @@ pub struct Game {
     pub score_black: i32,
     pub white_can_castle: String,
     pub black_can_castle: String,
+    pub half_time_moves: i32,
+    enpassang_target: Option<i32>,
     moves: u8
 }
 impl Game {
@@ -85,7 +97,9 @@ impl Game {
             score_black: 0,
             white_can_castle: "KQ".into(),
             black_can_castle: "kq".into(),
+            half_time_moves: 0,
             moves: 1,
+            enpassang_target: None,
         }
     }
 
@@ -143,6 +157,13 @@ impl Game {
                 Color::White
             },
         };
+
+        // No capture, and move is not a pawn promotion
+        if points == 0 && piece.piece_type != PieceType::Pawn {
+            self.half_time_moves += 1;
+        } else {
+            self.half_time_moves = 0;
+        }
 
         // Increase move counter
         self.moves += 1;
@@ -235,7 +256,7 @@ fn get_fen(game: &Game) -> String{
     fen.push(' ');
     fen.push('-');
     fen.push(' ');
-    fen.push('0');
+    fen.push_str(game.half_time_moves.to_string().as_str());
     fen.push(' ');
     fen.push_str(game.moves.to_string().as_str()); // Number of black moves
     fen

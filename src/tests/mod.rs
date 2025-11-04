@@ -8,3 +8,4 @@ mod game_tests;
 mod castling_tests;
 mod queen_tests;
 mod king_tests;
+mod half_time_move_tests;

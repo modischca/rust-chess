@@ -9,9 +9,8 @@ fn main() {
     println!("Welcome to the chess game!");
     println!("Type 'QUIT' to quit.");
     let g = Game::new();
-    print!("{}", g);
+    print!("{}", &g);
     read_user_input(g);
-
 }
 
 fn read_user_input(mut g: Game) {

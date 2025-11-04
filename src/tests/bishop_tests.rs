@@ -94,3 +94,26 @@ fn bishop_blocked_path_requires_redo_same_turn() {
     // Black responds to confirm normal turn flow.
     g.move_piece(('e', 7), ('e', 5)).unwrap(); // B
 }
+
+#[test]
+fn bishop_c8_to_h3_should_be_legal_after_d_pawn_push() {
+    let mut g = Game::new();
+
+    // 1. Nf3 — any legal white move just to pass the turn.
+    g.move_piece(('g', 1), ('f', 3)).unwrap();
+
+    // ... d5 — black pawn moves from d7 to d5, clearing the c8–h3 diagonal.
+    g.move_piece(('d', 7), ('d', 5)).unwrap();
+
+    // 2. g3 — again, any legal white move that doesn't touch the diagonal.
+    g.move_piece(('g', 2), ('g', 3)).unwrap();
+
+    // ... Bh3 — this is the move that *should* be legal.
+    let res = g.move_piece(('c', 8), ('h', 3));
+
+    assert!(
+        res.is_ok(),
+        "Expected Bh3 (c8->h3) to be legal after d7-d5, but got: {:?}",
+        res
+    );
+}

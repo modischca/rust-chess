@@ -1,2 +1,7 @@
 Castling with tests
 AnPassant
+
+Sjekk Enum Strum
+Ratatui
+
+Position::new, refaktorer parse_input i main.
