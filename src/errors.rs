@@ -25,8 +25,7 @@ pub enum GameErr {
     #[error("Illegal bishop move.")]
     IllegalBishopMove,
     #[error("Illegal rook move.")]
-    IllegalRookMove,
-
+    IllegalRookMove
 }
 
 pub type GameResult<T> = std::result::Result<T, GameErr>;

@@ -1,8 +1,8 @@
 use crate::errors::{GameErr, GameResult};
 use crate::game::{Color, Piece};
-use crate::ruleengine::{get_piece_at_pos, is_sliding_move};
+use crate::ruleengine::{get_piece_at_pos};
 
-pub fn check(board: [Option<Piece>; 64], from: (char, i32), to: (char, i32), current_player: Color) -> GameResult<i32> {
+pub fn check(board: &[Option<Piece>; 64], from: (char, i32), to: (char, i32), current_player: Color) -> GameResult<i32> {
 
     if from.1 != to.1 && from.0 != to.0 {
         return Err(GameErr::IllegalRookMove)
@@ -44,4 +44,19 @@ pub fn check(board: [Option<Piece>; 64], from: (char, i32), to: (char, i32), cur
         }
     }
     Ok(0)
+}
+
+pub fn is_sliding_move(from: &(char, i32), to: &(char, i32)) -> bool {
+    if (to.0 as i32 - from.0 as i32).abs() > 1 && to.1 == from.1 {
+        return true;
+    }
+    if (from.0 as i32 - to.0 as i32).abs() > 1 && to.1 == from.1 {
+        return true;
+    }
+
+    if (from.1 - to.1).abs() > 1 && to.0 == from.0 {
+        return true;
+    }
+
+    false
 }

@@ -2,7 +2,7 @@ use crate::errors::{GameErr, GameResult};
 use crate::game::Color;
 use crate::ruleengine;
 use crate::game::Piece;
-pub fn check(board: [Option<Piece>; 64], from: (char, i32), to: (char, i32), current_player: Color) -> GameResult<i32> {
+pub fn check(board: &[Option<Piece>; 64], from: (char, i32), to: (char, i32), current_player: Color) -> GameResult<i32> {
     let piece_from = ruleengine::get_piece_at_pos(&board, from);
     let piece_to = ruleengine::get_piece_at_pos(&board, to);
 

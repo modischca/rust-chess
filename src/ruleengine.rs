@@ -1,8 +1,8 @@
 mod ruleset_pawn;
 mod ruleset_rook;
 mod ruleset_knight;
-
 mod ruleset_bishop;
+mod ruleset_king;
 
 use crate::errors::{GameErr, GameResult};
 use crate::game::*;
@@ -32,6 +32,16 @@ pub fn is_allowed_move(board: &[Option<Piece>; 64], from: (char, i32), to: (char
 
     let piece_to = ruleengine::get_piece_at_pos(&board, to);
 
+    // Wrong color is moving
+    if piece_from.color != current_player {
+        Err(GameErr::IllegalMoveOnOtherPlayer)?
+    }
+
+    // No move registered. Start and end positions are equal.
+    if from == to {
+        return Err(GameErr::NoMoveRegistered);
+    }
+
     // Check that the position is empty, or that it is not occupied by the same color.
     if let Some(piece_to) = piece_to {
         if (piece_from.color ==  piece_to.color) {
@@ -41,35 +51,29 @@ pub fn is_allowed_move(board: &[Option<Piece>; 64], from: (char, i32), to: (char
     
     match piece_from.piece_type {
         PieceType::Pawn => {
-            ruleset_pawn::check(board.clone(), from, to, current_player)
+            ruleset_pawn::check(&board, from, to, current_player)
         },
         PieceType::Rook => {
-            ruleset_rook::check(board.clone(), from, to, current_player)
+            ruleset_rook::check(&board, from, to, current_player)
         },
         PieceType::Knight => {
-            ruleset_knight::check(board.clone(), from ,to, current_player)
+            ruleset_knight::check(&board, from ,to, current_player)
         },
         PieceType::Bishop => {
-            ruleset_bishop::check(board.clone(), from ,to, current_player)
+            ruleset_bishop::check(&board, from ,to, current_player)
         }
-        _ => {
-            Ok(0)
+        PieceType::Queen => {
+            ruleset_rook::check(&board, from, to, current_player)
+                .or_else(|_| {
+                    ruleset_bishop::check(&board, from, to, current_player)
+                        .map_err(|e| match e {
+                            GameErr::IllegalBishopMove => GameErr::IllegalQueenMove,
+                            _ => e,
+                        })
+                })
+        }
+        PieceType::King => {
+            ruleset_king::check(&board, from, to, current_player)
         }
     }
-
-}
-
-pub fn is_sliding_move(from: &(char, i32), to: &(char, i32)) -> bool {
-    if (to.0 as i32 - from.0 as i32).abs() > 1 && to.1 == from.1 {
-        return true;
-    }
-    if (from.0 as i32 - to.0 as i32).abs() > 1 && to.1 == from.1 {
-        return true;
-    }
-
-    if (from.1 - to.1).abs() > 1 && to.0 == from.0 {
-        return true;
-    }
-
-    false
 }

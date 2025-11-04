@@ -77,3 +77,20 @@ fn bishop_up_left_blocked_by_b2_then_legal_after_clearing() {
     // Now diagonal is open.
     g.move_piece(('c', 1), ('a', 3)).unwrap(); // W
 }
+#[test]
+fn bishop_blocked_path_requires_redo_same_turn() {
+    let mut g = Game::new();
+
+    // 1. White bishop on c1 tries to move diagonally to f4.
+    //    However, the pawn on d2 blocks its path.
+    assert_eq!(
+        g.move_piece(('c', 1), ('f', 4)),
+        Err(GameErr::PathIsBlocked)
+    );
+
+    // Still White's turn after the blocked-path error.
+    g.move_piece(('e', 2), ('e', 4)).unwrap(); // W
+
+    // Black responds to confirm normal turn flow.
+    g.move_piece(('e', 7), ('e', 5)).unwrap(); // B
+}

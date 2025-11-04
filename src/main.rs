@@ -11,17 +11,15 @@ mod ruleengine;
 fn main() {
     println!("Welcome to the chess game!");
     println!("Type 'QUIT' to quit.");
-    let mut g = Game::new();
-    print(&g);
-    &g.move_piece(('d', 2), ('d', 4)).unwrap();
-    &g.move_piece(('e', 7), ('e', 5)).unwrap();
-    print(&g);
+    let g = Game::new();
+    print!("{}", g);
     read_user_input(g);
+
 }
 
 fn read_user_input(mut g: Game) {
     let mut input = String::from("");
-    println!("Next move is: {}", &g.current_player.display());
+    println!("Current move is: {}", &g.current_player.display());
     println!("Please enter a move in the format 'a1=>a2': ");
     std::io::stdin().read_line(&mut input).expect("Invalid input");
     let input_as_vec = input.trim().split("=>").collect::<Vec<&str>>();
@@ -41,7 +39,7 @@ fn read_user_input(mut g: Game) {
     };
     match moved {
         Ok(_) => {
-            print(&g);
+            print!("{}", g);
             read_user_input(g);
         }
         Err(e) => {
@@ -71,47 +69,4 @@ fn parse_input(input: Vec<&str>) -> Result<((char, i32),(char, i32)), &str> {
         ,
         _ => Err("Invalid input"),
     }
-}
-
-pub fn print(g: &Game) {
-    let mut str = String::from("");
-    let mut board_rows: [[char; 8]; 8] = [[' '; 8];8];
-    let mut row_index = 0;
-    let mut col_index = 0;
-    for i in (0..g.board.len()).rev(){
-
-        if let Some(p) = g.board[i] {
-            board_rows[row_index][col_index] = p.get_char_code();
-
-        } else {
-            board_rows[row_index][col_index] = '\u{25A1}';
-        }
-        if col_index == 7 {
-            board_rows[row_index].reverse();
-            row_index += 1;
-            col_index = 0;
-        } else {
-            col_index += 1;
-        }
-
-    }
-    str.push_str("\n\r");
-    str.push_str(&format!("Score WHITE {} \n", &g.score_white));
-    str.push_str(&format!("Score BLACK {} \n", &g.score_black));
-    for (z, row) in board_rows.iter().enumerate() {
-        for (i, col) in row.iter().enumerate() {
-            if i == 0 {
-                str.push_str(&format!("{}    {} " ,(8 - z), col.to_string().as_str()));
-            } else {
-                str.push_str(&format!(" {} " ,col.to_string().as_str()));
-            }
-
-        }
-        str.push('\n');
-    }
-    str.push_str("\n\r");
-    str.push_str("     a  b  c  d  e  f  g  h \n");
-
-    println!("{}", str);
-
 }

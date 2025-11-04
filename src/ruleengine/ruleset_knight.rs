@@ -3,7 +3,7 @@ use crate::errors::{GameErr, GameResult};
 use crate::game::{Color, Piece};
 use crate::ruleengine;
 
-pub fn check(board: [Option<Piece>; 64], from: (char, i32), to: (char, i32), current_player: Color) -> GameResult<i32> {
+pub fn check(board: &[Option<Piece>; 64], from: (char, i32), to: (char, i32), current_player: Color) -> GameResult<i32> {
     let index = ruleengine::get_index_based_on_pos(from) as i32;
     let legal_pos: [i32; 8] = [
         step(index, 2, true, false),
