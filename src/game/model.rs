@@ -5,16 +5,6 @@ use crate::game::errors::{GameErr, GameResult};
 use crate::game::{Color, PieceType};
 use crate::ruleengine;
 
-
-pub struct Position (char, i32);
-/*
-impl Position {
-
-    fn new(char: char, row: i32) -> Result<Self> {
-
-    }
-
-}*/
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Piece {
     pub color: Color,
@@ -61,7 +51,7 @@ pub struct Game {
     pub white_can_castle: String,
     pub black_can_castle: String,
     pub half_time_moves: i32,
-    enpassang_target: Option<i32>,
+    enpassang_target: Option<String>,
     moves: u8
 }
 impl Game {
@@ -146,7 +136,25 @@ impl Game {
             }
         }
 
-        // Set current player
+        // No capture, and move is not a pawn promotion
+        if points == 0 && piece.piece_type != PieceType::Pawn {
+            self.half_time_moves += 1;
+        } else {
+            self.half_time_moves = 0;
+        }
+        // En passang move
+        self.enpassang_target = None;
+        if piece.piece_type == PieceType::Pawn && (to.1 - from.1).abs() == 2 {
+            if self.current_player == Color::White {
+                self.enpassang_target = Some(format!("{}{}", from.0,  to.1 - 1))
+            } else {
+                self.enpassang_target = Some(format!("{}{}", from.0,  to.1 + 1))
+            }
+        }
+        // Increase move counter
+        self.moves += 1;
+
+        // Set next player
         self.current_player = match self.current_player {
             Color::White => {
                 self.score_white += points;
@@ -157,16 +165,6 @@ impl Game {
                 Color::White
             },
         };
-
-        // No capture, and move is not a pawn promotion
-        if points == 0 && piece.piece_type != PieceType::Pawn {
-            self.half_time_moves += 1;
-        } else {
-            self.half_time_moves = 0;
-        }
-
-        // Increase move counter
-        self.moves += 1;
 
         // Update FEN
         self.fen = get_fen(self);
@@ -254,7 +252,8 @@ fn get_fen(game: &Game) -> String{
     fen.push(' ');
     fen.push_str(castle_rights.as_str());
     fen.push(' ');
-    fen.push('-');
+    //fen.push_str(game.enpassang_target.as_deref().unwrap_or("-"));
+    fen.push_str("-");
     fen.push(' ');
     fen.push_str(game.half_time_moves.to_string().as_str());
     fen.push(' ');

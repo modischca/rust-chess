@@ -1,16 +1,39 @@
+use std::thread;
+use std::time::Duration;
 use crate::game::Game;
+
 
 mod game;
 mod tests;
 mod ruleengine;
+mod stockfish;
 
 #[allow(unused)]
 fn main() {
     println!("Welcome to the chess game!");
     println!("Type 'QUIT' to quit.");
     let g = Game::new();
+
     print!("{}", &g);
-    read_user_input(g);
+    //read_user_input(g);
+
+    let sf = stockfish::StockfishAPI::new();
+    autoplay(g,sf);
+}
+
+fn autoplay(mut g: Game, sf: stockfish::StockfishAPI) {
+    let break_at = 25;
+
+    for i in 0..break_at {
+        let result = sf.get(&g.fen).expect("Invalid response from stockfish");
+        let moves = parse_input(vec![&result.from, &result.to]).expect("Invalid input");
+        println!("Stockfish move: from {} to {}",&result.from, &result.to);
+        g.move_piece(moves.0, moves.1).expect("Invalid move");
+        print!("{}", g);
+        thread::sleep(Duration::from_millis(1000));
+    }
+
+
 }
 
 fn read_user_input(mut g: Game) {
@@ -27,12 +50,12 @@ fn read_user_input(mut g: Game) {
     }
     let moved = match parse_input(input_as_vec) {
         Ok((from, to)) => {
-            &g.move_piece((from.0, from.1 as i32), (to.0, to.1 as i32))
+            g.move_piece((from.0, from.1 as i32), (to.0, to.1 as i32))
         },
         Err (e) => {
             println!("Error: {}", e);
             return read_user_input(g)
-         }
+        }
     };
     match moved {
         Ok(_) => {

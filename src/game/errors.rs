@@ -2,8 +2,6 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 #[derive(PartialEq)]
 pub enum GameErr {
-    #[error("Illegal move")]
-    IllegalMove,
     #[error("Path is blocked.")]
     PathIsBlocked,
     #[error("Position is occupied.")]
@@ -25,7 +23,8 @@ pub enum GameErr {
     #[error("Illegal bishop move.")]
     IllegalBishopMove,
     #[error("Illegal rook move.")]
-    IllegalRookMove
+    IllegalRookMove,
+
 }
 
 pub type GameResult<T> = std::result::Result<T, GameErr>;
