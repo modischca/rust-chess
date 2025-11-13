@@ -16,14 +16,13 @@ fn main() {
 
     print!("{}", &g);
     //read_user_input(g);
-
+    
     let sf = stockfish::StockfishAPI::new();
     autoplay(g,sf);
 }
 
 fn autoplay(mut g: Game, sf: stockfish::StockfishAPI) {
     let break_at = 25;
-
     for i in 0..break_at {
         let result = sf.get(&g.fen).expect("Invalid response from stockfish");
         let moves = parse_input(vec![&result.from, &result.to]).expect("Invalid input");
@@ -32,8 +31,6 @@ fn autoplay(mut g: Game, sf: stockfish::StockfishAPI) {
         print!("{}", g);
         thread::sleep(Duration::from_millis(1000));
     }
-
-
 }
 
 fn read_user_input(mut g: Game) {

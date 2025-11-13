@@ -25,12 +25,11 @@ pub fn get_index_based_on_pos(pos: (char, i32)) -> usize {
     char_index + row as usize
 }
 
+pub fn is_allowed_move(game: &Game, from: (char, i32), to: (char, i32), current_player: Color) -> GameResult<i32> {
 
-pub fn is_allowed_move(board: &[Option<Piece>; 64], from: (char, i32), to: (char, i32), current_player: Color) -> GameResult<i32> {
+    let piece_from = ruleengine::get_piece_at_pos(&game.board, from).expect("No piece at position.");
 
-    let piece_from = ruleengine::get_piece_at_pos(&board, from).expect("No piece at position.");
-
-    let piece_to = ruleengine::get_piece_at_pos(&board, to);
+    let piece_to = ruleengine::get_piece_at_pos(&game.board, to);
 
     // Wrong color is moving
     if piece_from.color != current_player {
@@ -51,21 +50,21 @@ pub fn is_allowed_move(board: &[Option<Piece>; 64], from: (char, i32), to: (char
     
     match piece_from.piece_type {
         PieceType::Pawn => {
-            ruleset_pawn::check(&board, from, to, current_player)
+            ruleset_pawn::check(&game.board, from, to, current_player)
         },
         PieceType::Rook => {
-            ruleset_rook::check(&board, from, to, current_player)
+            ruleset_rook::check(&game.board, from, to, current_player)
         },
         PieceType::Knight => {
-            ruleset_knight::check(&board, from ,to, current_player)
+            ruleset_knight::check(&game.board, from ,to, current_player)
         },
         PieceType::Bishop => {
-            ruleset_bishop::check(&board, from ,to, current_player)
+            ruleset_bishop::check(&game.board, from ,to, current_player)
         }
         PieceType::Queen => {
-            ruleset_rook::check(&board, from, to, current_player)
+            ruleset_rook::check(&game.board, from, to, current_player)
                 .or_else(|_| {
-                    ruleset_bishop::check(&board, from, to, current_player)
+                    ruleset_bishop::check(&game.board, from, to, current_player)
                         .map_err(|e| match e {
                             GameErr::IllegalBishopMove => GameErr::IllegalQueenMove,
                             _ => e,
@@ -73,7 +72,25 @@ pub fn is_allowed_move(board: &[Option<Piece>; 64], from: (char, i32), to: (char
                 })
         }
         PieceType::King => {
-            ruleset_king::check(&board, from, to, current_player)
+            ruleset_king::check(&game.board, from, to, current_player)
         }
     }
+
+}
+
+pub fn is_castling_move(game: &Game, from: (char, i32), to: (char, i32), current_player: Color) -> &str {
+    if (from.0 == 'e' && to.0 == 'g' && (from.1 == 1 && to.1 == from.1) && game.white_can_castle.contains("K") && current_player == Color::White) {
+        return "K".as_ref()
+    }
+    if (from.0 == 'e' && to.0 == 'g' && (from.1 == 1 && to.1 == from.1) && game.white_can_castle.contains("Q") && current_player == Color::White) {
+        return "Q".as_ref()
+    }
+    if (from.0 == 'e' && to.0 == 'g' && (from.1 == 8 && to.1 == from.1) && game.black_can_castle.contains("k") && current_player == Color::Black) {
+        return "k".as_ref()
+    }
+    if (from.0 == 'e' && to.0 == 'g' && (from.1 == 8 && to.1 == from.1) && game.black_can_castle.contains("q") && current_player == Color::Black) {
+        return "q".as_ref()
+    }
+
+    "-"
 }

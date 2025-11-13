@@ -1,4 +1,5 @@
 
+
 #[derive(Debug,Clone, Copy,PartialEq)]
 pub enum PieceType {
     Pawn,
@@ -23,4 +24,3 @@ impl Color {
         }
     }
 }
-

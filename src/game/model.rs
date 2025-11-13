@@ -8,7 +8,7 @@ use crate::ruleengine;
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Piece {
     pub color: Color,
-    pub piece_type: PieceType
+    pub piece_type: PieceType,
 }
 
 impl Piece {
@@ -100,9 +100,40 @@ impl Game {
             None => return Err(GameErr::NoPieceAtPosition),
         };
 
-        // Check if the move is allowed
-        // Will cast GameErr if not allowed.
-        let points = ruleengine::is_allowed_move(&self.board, from, to, self.current_player)?;
+        let points = match ruleengine::is_castling_move(self, from, to, self.current_player) {
+            "K" => {
+                // Move rook
+                let rook = ruleengine::get_piece_at_pos(&self.board, ('h',1)).expect("No rook at position.");
+                let rook_index = ruleengine::get_index_based_on_pos(('h',1));
+                self.board[rook_index - 2] = Some(rook.clone());
+                self.board[rook_index] = None;
+                Ok(1)
+            },
+            "Q" => {
+                let rook = ruleengine::get_piece_at_pos(&self.board, ('a',1)).expect("No rook at position.");
+                let rook_index = ruleengine::get_index_based_on_pos(('a',1));
+                self.board[rook_index - 2] = Some(rook.clone());
+                self.board[rook_index] = None;
+                Ok(1)
+            },
+            "k" => {
+                let rook = ruleengine::get_piece_at_pos(&self.board, ('h',8)).expect("No rook at position.");
+                let rook_index = ruleengine::get_index_based_on_pos(('h',8));
+                self.board[rook_index - 2] = Some(rook.clone());
+                self.board[rook_index] = None;
+                Ok(1)
+            },
+            "q" => {
+                let rook = ruleengine::get_piece_at_pos(&self.board, ('a',8)).expect("No rook at position.");
+                let rook_index = ruleengine::get_index_based_on_pos(('a',8));
+                self.board[rook_index - 2] = Some(rook.clone());
+                self.board[rook_index] = None;
+                Ok(1)
+            },
+            _ => {
+                Ok(ruleengine::is_allowed_move(&self, from, to, self.current_player))?
+            }
+        }.expect("Illegal castling move");
 
         // Clear square
         let from_idx = ruleengine::get_index_based_on_pos(from);

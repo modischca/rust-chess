@@ -20,6 +20,8 @@ pub fn check(board: &[Option<Piece>; 64], from: (char, i32), to: (char, i32), cu
         }
         return Ok(0);
     }
+
+
     Err(GameErr::IllegalKingMove)
 
 }
